@@ -1,0 +1,86 @@
+# Copyright (C) 2003-2010 by CHAI 3D.
+#  All Rights Reserved.
+#
+#  $Author: seb $
+#  $Date: 2010-01-12 16:52:25 +1300 (Tue, 12 Jan 2010) $
+#  $Rev: 320 $
+
+# edited by @djoshea to link against most recent delta sdk version
+
+# default build configuration
+ifneq ($(CFG),debug)
+CFG=release
+endif
+
+# platform
+SYSTEM = $(shell echo `uname -s`)
+ifeq ($(SYSTEM), Linux)
+OS = lin
+endif
+ifeq ($(SYSTEM), Darwin)
+OS = mac
+endif
+
+# determine architecture
+ifeq ($(ARCH), )
+ARCH  ?= $(shell echo `uname -m`)
+MARCH ?= native
+else
+MARCH ?= $(ARCH)
+endif
+
+# common folders
+LIB_DIR  = $(CHAI_DIR)/lib/$(OS)-$(ARCH)
+INC_DIR  = $(CHAI_DIR)/src
+
+# static library target
+ifneq ($(CFG),debug)
+LIB_TARGET = $(LIB_DIR)/libchai3d.a
+else
+LIB_TARGET = $(LIB_DIR)/libchai3d-dbg.a
+endif
+
+# external libraries
+#DHD_EXT = $(CHAI_DIR)/external/DHD
+# edited by @djoshea to link against most recent SDK version
+DHD_EXT = $(SDK_DIR)
+ODE_EXT = $(CHAI_DIR)/external/ODE
+
+# modules
+GEL_DIR = $(CHAI_DIR)/modules/GEL
+ODE_DIR = $(CHAI_DIR)/modules/ODE
+
+# common compiler flags
+CXX       = g++
+CXXFLAGS  = -I$(INC_DIR)
+
+# build configuration specific
+ifeq ($(CFG),debug)
+CXXFLAGS += -O0 -g
+else
+CXXFLAGS += -O3
+endif
+
+# module specific compiler flags
+CXXFLAGS += -I$(GEL_DIR)
+CXXFLAGS += -I$(ODE_DIR) -I$(ODE_EXT)/include -DdDOUBLE
+
+# common librarian flags
+ARFLAGS  = rvs
+
+# common linker flags
+# edited by @djoshea to link against most recent SDK version
+#LDFLAGS  = -L$(LIB_DIR) -L$(DHD_EXT)/lib/$(OS)-$(ARCH)
+LDFLAGS  = -L$(LIB_DIR) -L$(DHD_EXT)/lib/release/$(OS)-$(ARCH)
+ifneq ($(CFG),debug)
+LDLIBS  = -lchai3d -ldhd
+else
+LDLIBS  = -lchai3d-dbg -ldhd
+endif
+
+# module specific linker flags
+LDFLAGS += -L$(ODE_EXT)/lib/$(OS)-$(ARCH)
+LDLIBS  += -lode
+
+# platform-specific macros
+include Makefile.chai.$(OS)
