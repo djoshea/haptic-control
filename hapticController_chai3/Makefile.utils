@@ -1,0 +1,8 @@
+COLOR_NONE=\33[0m
+COLOR_WHITE=\33[37;01m
+COLOR_BLUE=\33[34;01m
+
+#ECHO = @echo -n "$(COLOR_BLUE)==>$(COLOR_WHITE)"
+#ECHO_END = ;echo " $(COLOR_BLUE)<==$(COLOR_NONE)"
+ECHO = @echo
+
