@@ -85,11 +85,10 @@ The function `stateMachineUpdate()` in `stateMachine.cpp` is the loop that manip
 
 I'd originally envisioned this as having more logic to it, i.e. having it actually be a state machine instead of a command relay loop. But it became quickly obvious that the logic was task specific and better handled by the task logic. What logic does remain here is inside the `haptic...` methods, which occasionally will turn off competing things when they operate. For instance, `hapticMoveToPoint` calls `hapticAbortPerturbation` and `hapticConstrainAbort` since it wouldn't make sense to have these things running concurrently. So there are some useful side effects here, but very little task state is maintained in this code aside from the states of the `HapticWorkspace` objects themselves. One exception is simply whether the handle is retracted or not (in `stateMachine.h`)
 
-```
+```cpp
 struct StateMachineState {
     bool isRetracted;
 };
-
 ```
 
 ## Network loop
