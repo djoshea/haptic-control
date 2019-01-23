@@ -83,6 +83,15 @@ Inside `updateHaptics()` in `environment.cpp` is the loop that calls Chai's main
 
 The function `stateMachineUpdate()` in `stateMachine.cpp` is the loop that manipulates the environment as instructed by the task over UDP. This calls `parseBinPacket()` to unpack the bytes from the received packet and populates the fields of the `HapticCommand` struct in a `commandId` specific way. There's a bit of unfortunate redundancy here, in that both `parseBinPacket` and `stateMachineUpdate` have switch statements over all the haptic commands defined, but it made it cleaner to debug the two separately. `stateMachineUpdate` then calls the appropriate `haptic...` method, all of which are defined in `haptic.cpp`, to actually manipulate something about the environment, typically by changing the properties of one of the things in the `HapticWorkspace workspace`, or turning one of them on or off via `setEnabled()`.
 
+I'd originally envisioned this as having more logic to it, i.e. having it actually be a state machine instead of a command relay loop. But it became quickly obvious that the logic was task specific and better handled by the task logic. What logic does remain here is inside the `haptic...` methods, which occasionally will turn off competing things when they operate. For instance, `hapticMoveToPoint` calls `hapticAbortPerturbation` and `hapticConstrainAbort` since it wouldn't make sense to have these things running concurrently. So there are some useful side effects here, but very little task state is maintained in this code aside from the states of the `HapticWorkspace` objects themselves. One exception is simply whether the handle is retracted or not (in `stateMachine.h`)
+
+```
+struct StateMachineState {
+    bool isRetracted;
+};
+
+```
+
 ## Network loop
 
 This function `networkUpdate` in `network.cpp` simply packs a UDP packet with the positions, velocities, forces, and any other info you'd like to send the task and sends it out repeatedly every `LOOP_INTERVAL` seconds.
